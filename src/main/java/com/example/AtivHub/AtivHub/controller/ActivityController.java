@@ -20,42 +20,35 @@ public class ActivityController {
 
     private final ActivityService activityService;
 
-    @PostMapping
+    @PostMapping("/classrooms/{classroomId}")
     @PreAuthorize("hasRole('PROFESSOR')")
-    public ResponseEntity<ActivityResponseDTO> createActivity(@RequestBody @Valid ActivityRequestDTO data) {
-        ActivityResponseDTO response = activityService.createActivity(data);
+    public ResponseEntity<ActivityResponseDTO> createActivity(
+            @PathVariable UUID classroomId,
+            @RequestBody @Valid ActivityRequestDTO data) {
+        
+        ActivityResponseDTO response = activityService.createActivity(classroomId, data);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    @GetMapping("/classrooms/{classroomId}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<ActivityResponseDTO>> listActivitiesByClassroom(@PathVariable UUID classroomId) {
+        return ResponseEntity.ok(activityService.listActivitiesByClassroom(classroomId));
+    }
+
+    @GetMapping("/{activityId}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ActivityResponseDTO> getActivityById(@PathVariable UUID activityId) {
+        return ResponseEntity.ok(activityService.getActivityById(activityId));
+    }
+
     @GetMapping
-    public ResponseEntity<List<ActivityResponseDTO>> listAllActivities() {
-        return ResponseEntity.ok(activityService.listAllActivities());
-    }
-
-    @GetMapping("/professor")
-    @PreAuthorize("hasRole('PROFESSOR')")
-    public ResponseEntity<List<ActivityResponseDTO>> listActivitiesByProfessor() {
-        return ResponseEntity.ok(activityService.listActivitiesByProfessor());
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<ActivityResponseDTO> getActivityById(@PathVariable UUID id) {
-        return ResponseEntity.ok(activityService.getActivityById(id));
-    }
-
-    @PutMapping("/{id}")
-    @PreAuthorize("hasRole('PROFESSOR')")
-    public ResponseEntity<ActivityResponseDTO> updateActivity(
-            @PathVariable UUID id, 
-            @RequestBody @Valid ActivityRequestDTO data) {
-        ActivityResponseDTO response = activityService.updateActivity(id, data);
-        return ResponseEntity.ok(response);
-    }
-
-    @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('PROFESSOR')")
-    public ResponseEntity<Void> deleteActivity(@PathVariable UUID id) {
-        activityService.deleteActivity(id);
-        return ResponseEntity.noContent().build();
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<List<ActivityResponseDTO>> listActivities(
+            @RequestParam(required = false) UUID classroomId) {
+        if (classroomId != null) {
+            return ResponseEntity.ok(activityService.listActivitiesByClassroom(classroomId));
+        }
+        return ResponseEntity.ok(activityService.listAllMyActivities());
     }
 }

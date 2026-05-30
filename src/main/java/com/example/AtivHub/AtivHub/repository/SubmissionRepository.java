@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+// Recriando o arquivo para forçar a reindexação pela IDE
 @Repository
 public interface SubmissionRepository extends JpaRepository<Submission, UUID> {
     List<Submission> findAllByActivityId(UUID activityId);

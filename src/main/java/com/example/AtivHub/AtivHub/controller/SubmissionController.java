@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+// Recriando o arquivo para forçar a reindexação pela IDE
 @RestController
 @RequestMapping
 @RequiredArgsConstructor
@@ -51,22 +52,5 @@ public class SubmissionController {
     @PreAuthorize("hasRole('ALUNO')")
     public ResponseEntity<List<SubmissionResponseDTO>> listMySubmissions() {
         return ResponseEntity.ok(submissionService.listMySubmissions());
-    }
-
-    @PutMapping("/submissions/{submissionId}")
-    @PreAuthorize("hasRole('ALUNO')")
-    public ResponseEntity<SubmissionResponseDTO> updateSubmission(
-            @PathVariable UUID submissionId,
-            @RequestBody @Valid SubmissionRequestDTO data) {
-        
-        SubmissionResponseDTO response = submissionService.updateSubmission(submissionId, data);
-        return ResponseEntity.ok(response);
-    }
-
-    @DeleteMapping("/submissions/{submissionId}")
-    @PreAuthorize("hasRole('ALUNO')")
-    public ResponseEntity<Void> deleteSubmission(@PathVariable UUID submissionId) {
-        submissionService.deleteSubmission(submissionId);
-        return ResponseEntity.noContent().build();
     }
 }

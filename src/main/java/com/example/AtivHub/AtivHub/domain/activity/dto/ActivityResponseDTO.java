@@ -11,6 +11,7 @@ public record ActivityResponseDTO(
         String description,
         Integer xpReward,
         String professorName,
+        String classroomName,
         LocalDateTime createdAt
 ) {
     public ActivityResponseDTO(Activity activity) {
@@ -20,6 +21,7 @@ public record ActivityResponseDTO(
                 activity.getDescription(),
                 activity.getXpReward(),
                 activity.getProfessor().getName(),
+                activity.getClassroom() != null ? activity.getClassroom().getName() : "Sem sala",
                 activity.getCreatedAt()
         );
     }

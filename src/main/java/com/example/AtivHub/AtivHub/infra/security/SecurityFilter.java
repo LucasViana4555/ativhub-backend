@@ -15,6 +15,7 @@ import java.io.IOException;
 
 @Component
 @RequiredArgsConstructor
+@org.springframework.context.annotation.Lazy
 public class SecurityFilter extends OncePerRequestFilter {
 
     private final TokenService tokenService;

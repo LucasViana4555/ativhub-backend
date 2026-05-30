@@ -5,6 +5,7 @@ import com.example.AtivHub.AtivHub.domain.activity.Submission;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+// Recriando o arquivo para forçar a reindexação pela IDE
 public record SubmissionResponseDTO(
         UUID id,
         String activityTitle,

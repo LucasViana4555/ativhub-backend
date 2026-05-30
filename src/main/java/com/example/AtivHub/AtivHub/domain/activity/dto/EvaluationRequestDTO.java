@@ -2,6 +2,7 @@ package com.example.AtivHub.AtivHub.domain.activity.dto;
 
 import jakarta.validation.constraints.NotNull;
 
+// Recriando o arquivo para forçar a reindexação pela IDE
 public record EvaluationRequestDTO(
         String feedback,
 

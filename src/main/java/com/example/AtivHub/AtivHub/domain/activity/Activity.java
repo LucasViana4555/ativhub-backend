@@ -1,6 +1,7 @@
 package com.example.AtivHub.AtivHub.domain.activity;
 
-import com.example.AtivHub.AtivHub.domain.user.User;
+import com.example.AtivHub.AtivHub.domain.classroom.Classroom;
+import com.example.AtivHub.AtivHub.domain.user.Professor;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -34,7 +35,11 @@ public class Activity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "professor_id", nullable = false)
-    private User professor;
+    private Professor professor;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "classroom_id", nullable = false)
+    private Classroom classroom;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

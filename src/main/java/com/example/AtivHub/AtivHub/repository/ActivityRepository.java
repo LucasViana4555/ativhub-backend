@@ -9,5 +9,7 @@ import java.util.UUID;
 
 @Repository
 public interface ActivityRepository extends JpaRepository<Activity, UUID> {
+    List<Activity> findAllByClassroomId(UUID classroomId);
+    List<Activity> findAllByClassroomIdIn(List<UUID> classroomIds);
     List<Activity> findAllByProfessorId(UUID professorId);
 }

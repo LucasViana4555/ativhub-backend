@@ -27,6 +27,9 @@ import java.util.List;
 public class SecurityConfigurations {
 
     private final SecurityFilter securityFilter;
+    private final HttpCookieOAuth2AuthorizationRequestRepository httpCookieOAuth2AuthorizationRequestRepository;
+    private final OAuth2SuccessHandler oAuth2SuccessHandler;
+    private final OAuth2FailureHandler oAuth2FailureHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
@@ -38,6 +41,8 @@ public class SecurityConfigurations {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/oauth2/complete-registration").permitAll()
+                        .requestMatchers("/login/oauth2/code/**", "/oauth2/authorization/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/activities").hasRole("PROFESSOR")
                         .requestMatchers(HttpMethod.PUT, "/activities/**").hasRole("PROFESSOR")
                         .requestMatchers(HttpMethod.DELETE, "/activities/**").hasRole("PROFESSOR")
@@ -45,6 +50,17 @@ public class SecurityConfigurations {
                         .requestMatchers(HttpMethod.PUT, "/submissions/*/feedback").hasRole("PROFESSOR")
                         .requestMatchers(HttpMethod.GET, "/ranking").hasAnyRole("ALUNO", "PROFESSOR")
                         .anyRequest().authenticated()
+                )
+                .oauth2Login(oauth2 -> oauth2
+                        .authorizationEndpoint(authorization -> authorization
+                                .baseUri("/oauth2/authorization")
+                                .authorizationRequestRepository(httpCookieOAuth2AuthorizationRequestRepository)
+                        )
+                        .redirectionEndpoint(redirection -> redirection
+                                .baseUri("/login/oauth2/code/*")
+                        )
+                        .successHandler(oAuth2SuccessHandler)
+                        .failureHandler(oAuth2FailureHandler)
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();

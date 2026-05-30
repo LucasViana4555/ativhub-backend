@@ -1,6 +1,6 @@
 package com.example.AtivHub.AtivHub.domain.activity;
 
-import com.example.AtivHub.AtivHub.domain.user.User;
+import com.example.AtivHub.AtivHub.domain.user.Student;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -28,7 +28,7 @@ public class Submission {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_id", nullable = false)
-    private User student;
+    private Student student;
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String answer;
