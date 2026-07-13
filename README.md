@@ -5,49 +5,55 @@
 ![PostgreSQL](https://img.shields.io/badge/postgresql-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)
 ![JWT](https://img.shields.io/badge/JWT-black?style=for-the-badge&logo=JSON%20web%20tokens)
 
-O **AtivHub** é uma plataforma gamificada de gestão de aprendizagem (LMS) focada na criação, distribuição e correção de missões e atividades educacionais. O sistema transforma a entrega de tarefas em uma experiência imersiva para o estudante, recompensando o cumprimento de metas com Pontos de Experiência (XP), níveis dinâmicos e um Ranking Global competitivo.
+O **AtivHub** é uma plataforma gamificada de gestão de aprendizagem (LMS) focada na criação, distribuição e correção de missões e atividades educacionais.
 
-Este repositório contém o **Core Backend** da aplicação, desenvolvido seguindo os padrões arquiteturais de uma API REST robusta, segura e escalável utilizando o ecossistema Java com Spring Boot.
+Este repositório contém o **Backend do AtivHub**, que foi migrado para uma arquitetura distribuída de **Microsserviços** escaláveis e desacoplados, utilizando Java com Spring Boot, mensageria assíncrona com Apache Kafka e containers com Docker.
 
 ---
 
 ## 🚀 Funcionalidades Principais
 
-* **Autenticação e Autorização Seguras:** Controle de acesso baseado em cargos (**Roles**) gerenciado via Spring Security e Tokens JWT.
-* **Visão do Professor:** Criação, edição, listagem e remoção de atividades (missões) educacionais, além de um sistema centralizado para dar notas e feedbacks às submissões dos alunos.
-* **Visão do Aluno:** Painel dinâmico de atividades pendentes, envio de respostas (submissões), acompanhamento de notas/feedbacks recebidos e visualização do próprio progresso (XP e Nível).
-* **Ranking Global Otimizado:** Placar atualizado que exibe o TOP 10 de alunos da plataforma, ordenando-os por maior quantidade de XP e maior número de atividades respondidas.
-* **Evolução Dinâmica:** Sistema automático de níveis calculado diretamente no servidor (Ex: cada 100 XP equivale a um novo nível).
-* **Versionamento de Banco de Dados:** Todas as tabelas e alterações estruturais do banco de dados PostgreSQL são gerenciadas de forma automatizada por migrações.
+*   **Arquitetura de Microsserviços:** Divisão do sistema em serviços independentes:
+    *   **Main Service (Core):** Gerencia autenticação, controle de salas de aula, missões e submissões.
+    *   **Gamification Service:** Gerencia o cálculo de ganho de XP dos alunos, regras de níveis e ranking global.
+*   **Comunicação Assíncrona via Kafka:** Processamento desacoplado de eventos do sistema (como novas submissões avaliadas que geram atualização de XP) usando tópicos de mensageria no Apache Kafka.
+*   **Autenticação e Autorização Seguras:** Controle de acesso baseado em cargos (**Roles**) gerenciado via Spring Security e Tokens JWT no Core Service.
+*   **Verificação de E-mail:** Fluxo de cadastro integrado com envio de código numérico de 6 dígitos para validação de conta.
+*   **Evolução Dinâmica:** Sistema automático de níveis calculado diretamente no microsserviço de gamificação de forma distribuída.
+*   **Isolamento de Banco de Dados:** Cada microsserviço possui seu próprio banco de dados PostgreSQL independente (`ativhub_core` e `ativhub_gamification`) para total isolamento dos dados de negócio.
+*   **Versionamento Automático:** Banco de dados versionado dinamicamente com Flyway migrations dentro de cada microsserviço.
 
 ---
 
 ## 🛠️ Tecnologias e Bibliotecas Utilizadas
 
-* **Java 21 (Temurin OpenJDK):** Versão LTS da linguagem, utilizando recursos modernos de performance e sintaxe.
-* **Spring Boot 3.4.1:** Base do ecossistema do projeto para configuração simplificada.
-* **Spring Web:** Criação de endpoints RESTful estruturados com `ResponseEntity` e controle semântico de verbos HTTP.
-* **Spring Security & JWT (auth0):** Proteção criptografada de rotas e validação stateless de requisições por token bearer.
-* **Spring Data JPA & Hibernate:** Mapeamento Objeto-Relacional (ORM) e abstração de consultas ao banco de dados com repositórios dinâmicos.
-* **PostgreSQL:** Banco de dados relacional robusto utilizado para persistência dos dados de produção e desenvolvimento.
-* **Flyway Migration:** Framework de migração para evolução contínua e controlada do esquema do banco de dados (`db/migration`).
-* **Jakarta Bean Validation:** Validação declarativa de integridade de dados de entrada (`@Valid`, `@NotNull`, `@NotBlank`) nos DTOs.
-* **Lombok:** Redução drástica de código boilerplate através de anotações como `@RequiredArgsConstructor`, `@Getter`, e `@Setter`.
+*   **Java 21 (Temurin OpenJDK):** Recursos de performance e sintaxe modernos.
+*   **Spring Boot 3.4.1:** Base de configuração rápida e estável para microsserviços.
+*   **Apache Kafka (KRaft Mode):** Broker de mensageria de alta performance para comunicação assíncrona entre os serviços.
+*   **Docker & Docker Compose:** Containerização e orquestração de toda a stack local (PostgreSQL, Kafka, Serviços).
+*   **Spring Data JPA & Flyway:** Persistência relacional robusta com versionamento de banco independente por serviço.
+*   **Spring Security & JWT (auth0):** Proteção criptografada de rotas de forma stateless.
+*   **Lombok & Jakarta Validation:** Código conciso sem boilerplate e validações de DTO na entrada.
 
 ---
 
-## 📦 Arquitetura de Pacotes
+## 📦 Estrutura do Projeto
 
-O projeto segue uma estrutura limpa e dividida por responsabilidades claras (Clean Architecture / Domain-Driven Design simplificado):
+O projeto é organizado como um repositório multi-módulos conceitual contendo serviços isolados e arquivos de orquestração:
 
 ```text
-com.example.AtivHub.AtivHub
+AtivHub/
 │
-├── controller      # Camada de Entrada: Endpoints REST expostos ao Frontend
-├── domain          # Modelos de Negócio: Entidades JPA, Enums e os DTOs (Data Transfer Objects)
-├── infra           # Configurações de Infraestrutura: Filtros de Segurança, JWT, Tratamento Global de Erros
-├── repository      # Camada de Acesso a Dados: Interfaces JPA que conversam com o PostgreSQL
-└── service         # Camada de Serviço: Contém as Regras de Negócio e validações lógicas do sistema
+├── gamification-service/   # Microsserviço de Gamificação (XP, Níveis, Ranking) - Porta 8082
+│   ├── src/
+│   └── pom.xml
+│
+├── main-service/           # Microsserviço Core (Auth, Classes, Atividades) - Porta 8080
+│   ├── src/
+│   └── pom.xml
+│
+├── docker-compose.yml      # Orquestrador local da stack (Postgres, Kafka, Serviços)
+└── init-db.sql             # Script SQL de inicialização dos múltiplos bancos de dados
 ```
 
 ---
@@ -67,44 +73,51 @@ Esta API foi construída de forma totalmente desacoplada e está preparada para 
 
 ## 🛠️ Como Executar o Projeto Localmente
 
-Siga o passo a passo abaixo para rodar esta API na sua máquina:
+Há duas maneiras principais de executar a stack de microsserviços do AtivHub localmente:
 
-### 1. Pré-requisitos Obrigatórios
-* Ter o **Java 21** instalado configurado nas variáveis de ambiente (`JAVA_HOME`).
-* Ter o **Maven** instalado (ou usar o wrapper `./mvnw` incluso).
-* Ter o banco de dados **PostgreSQL** instalado e em execução.
+### Método 1: Usando Docker Compose (Recomendado)
 
-### 2. Configuração do Banco de Dados
-Abra o seu gerenciador do PostgreSQL (pgAdmin, DBeaver, terminal, etc.) e crie um banco de dados vazio com o nome exato do projeto:
+Este método sobe o PostgreSQL, o Apache Kafka e ambos os microsserviços automaticamente em containers, pré-configurados para se comunicarem.
 
-```sql
-CREATE DATABASE ativhub;
-```
+1. **Pré-requisitos:** Ter o **Docker** e o **Docker Compose** instalados.
+2. **Executar a Stack:** Na raiz do projeto backend (onde está o arquivo `docker-compose.yml`), execute o comando:
+   ```bash
+   docker compose up --build -d
+   ```
+   *(Nota: O script `init-db.sql` criará os bancos de dados `ativhub_core` e `ativhub_gamification` automaticamente. As migrações do Flyway serão executadas por cada serviço no momento da inicialização).*
+3. **Serviços Ativos:**
+   * **Main Service:** `http://localhost:8080`
+   * **Gamification Service:** `http://localhost:8082`
+   * **Apache Kafka Broker:** `localhost:9092`
+   * **PostgreSQL Database:** `localhost:5432`
 
-### 3. Ajustar as Credenciais
-Abra o arquivo `src/main/resources/application.properties` e verifique se o usuário e a senha do banco batem com a sua instalação local:
+---
 
-```properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/ativhub
-spring.datasource.username=seu_usuario_postgres
-spring.datasource.password=sua_senha_postgres
-spring.jpa.hibernate.ddl-auto=validate
-spring.jpa.show-sql=true
-```
-*(Nota: O Flyway executará os scripts SQL contidos em `src/main/resources/db/migration` assim que o app ligar, criando todas as tabelas sozinhos!)*
+### Método 2: Executando Manualmente (Desenvolvimento)
 
-### 4. Compilar e Rodar a Aplicação
-Você pode rodar o projeto diretamente pela sua IDE (IntelliJ IDEA / Eclipse) executando a classe principal `AtivHubApplication.java`, ou utilizar o terminal de comandos na raiz do projeto:
+Se você preferir rodar os serviços via terminal ou através de sua IDE (como IntelliJ IDEA ou Eclipse):
 
-```bash
-# Compilar o projeto e baixar as dependências
-mvn clean install
-
-# Executar a aplicação Spring Boot
-mvn spring-boot:run
-```
-
-O servidor iniciará com sucesso na porta padrão: **`http://localhost:8080`**.
+1. **Pré-requisitos:**
+   * **Java 21** instalado e configurado (`JAVA_HOME`).
+   * **Maven** instalado (ou use o wrapper `./mvnw` em cada pasta).
+   * **PostgreSQL** e **Apache Kafka** rodando localmente nas portas padrões (`5432` e `9092`).
+2. **Configuração de Banco:** Crie os dois bancos necessários no PostgreSQL:
+   ```sql
+   CREATE DATABASE ativhub_core;
+   CREATE DATABASE ativhub_gamification;
+   ```
+3. **Iniciar os Microsserviços:**
+   Abra dois terminais separados e rode cada serviço:
+   * **Para o Main Service:**
+     ```bash
+     cd main-service
+     mvn spring-boot:run
+     ```
+   * **Para o Gamification Service:**
+     ```bash
+     cd gamification-service
+     mvn spring-boot:run
+     ```
 
 ---
 
